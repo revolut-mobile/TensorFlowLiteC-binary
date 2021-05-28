@@ -1,0 +1,47 @@
+diff --git a/BUILD.bazel b/BUILD.bazel
+index dc228700..f6e6053a 100644
+--- a/BUILD.bazel
++++ b/BUILD.bazel
+@@ -7480,6 +7480,14 @@ config_setting(
+     },
+ )
+ 
++config_setting(
++    name = "ios_sim_arm64",
++    values = {
++        "apple_platform_type": "ios",
++        "cpu": "ios_sim_arm64",
++    },
++)
++
+ config_setting(
+     name = "ios_arm64e",
+     values = {
+diff --git a/build_defs.bzl b/build_defs.bzl
+index af543b93..ef99fc43 100644
+--- a/build_defs.bzl
++++ b/build_defs.bzl
+@@ -156,6 +156,7 @@ def xnnpack_cc_library(
+             ":android_x86": x86_srcs,
+             ":android_x86_64": x86_srcs,
+             ":ios_armv7": aarch32_srcs,
++            ":ios_sim_arm64": aarch64_srcs,
+             ":ios_arm64": aarch64_srcs,
+             ":ios_arm64e": aarch64_srcs,
+             ":ios_x86": x86_srcs,
+@@ -191,6 +192,7 @@ def xnnpack_cc_library(
+             ":android_x86": gcc_x86_copts,
+             ":android_x86_64": gcc_x86_copts,
+             ":ios_armv7": apple_aarch32_copts,
++            ":ios_sim_arm64": aarch64_copts,
+             ":ios_arm64": aarch64_copts,
+             ":ios_arm64e": aarch64_copts,
+             ":ios_x86": gcc_x86_copts,
+@@ -273,6 +275,7 @@ def xnnpack_aggregate_library(
+             ":android_x86": x86_deps,
+             ":android_x86_64": x86_deps,
+             ":ios_armv7": aarch32_deps,
++            ":ios_sim_arm64": aarch64_deps,
+             ":ios_arm64": aarch64_deps,
+             ":ios_arm64e": aarch64_deps,
+             ":ios_x86": x86_deps,

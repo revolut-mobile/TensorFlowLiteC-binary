@@ -1,0 +1,74 @@
+diff --git a/tensorflow/lite/kernels/internal/BUILD b/tensorflow/lite/kernels/internal/BUILD
+index d1b0505de90..2432725beec 100644
+--- a/tensorflow/lite/kernels/internal/BUILD
++++ b/tensorflow/lite/kernels/internal/BUILD
+@@ -133,6 +133,13 @@ config_setting(
+     },
+ )
+ 
++config_setting(
++    name = "ios_sim_arm64",
++    values = {
++        "cpu": "ios_sim_arm64",
++    },
++)
++
+ config_setting(
+     name = "ios_arm64",
+     values = {
+@@ -238,6 +245,7 @@ selects.config_setting_group(
+         ":armhf",
+         ":armv7a",
+         ":ios_armv7",
++        ":ios_sim_arm64",
+         ":ios_arm64",
+         ":ios_arm64e",
+         ":darwin_arm64",
+diff --git a/tensorflow/workspace2.bzl b/tensorflow/workspace2.bzl
+index efc50709b8f..c4dc2f65e2f 100644
+--- a/tensorflow/workspace2.bzl
++++ b/tensorflow/workspace2.bzl
+@@ -124,14 +124,9 @@ def _tf_repositories():
+     # b) get the sha256 hash of the commit by running:
+     #    curl -L <url> | sha256sum
+     # and update the sha256 with the result.
+-    tf_http_archive(
++    native.local_repository(
+         name = "XNNPACK",
+-        sha256 = "95b778a920a1a79efdb11bf68dda9b4fd16779a1a0210438582e750f9bfb6351",
+-        strip_prefix = "XNNPACK-fb8d1f1b2bb2e32c141564528a39748c4631b453",
+-        urls = [
+-            "https://storage.googleapis.com/mirror.tensorflow.org/github.com/google/XNNPACK/archive/fb8d1f1b2bb2e32c141564528a39748c4631b453.zip",
+-            "https://github.com/google/XNNPACK/archive/fb8d1f1b2bb2e32c141564528a39748c4631b453.zip",
+-        ],
++        path = "../XNNPACK",
+     )
+ 
+     tf_http_archive(
+diff --git a/third_party/cpuinfo/BUILD.bazel b/third_party/cpuinfo/BUILD.bazel
+index 8e9239c0efb..72338d50ce1 100644
+--- a/third_party/cpuinfo/BUILD.bazel
++++ b/third_party/cpuinfo/BUILD.bazel
+@@ -115,6 +115,7 @@ cc_library(
+         ":ios_x86_64": COMMON_SRCS + X86_SRCS + MACH_SRCS + MACH_X86_SRCS,
+         ":ios_x86": COMMON_SRCS + X86_SRCS + MACH_SRCS + MACH_X86_SRCS,
+         ":ios_armv7": COMMON_SRCS + MACH_SRCS + MACH_ARM_SRCS,
++        ":ios_sim_arm64": COMMON_SRCS + MACH_SRCS + MACH_ARM_SRCS,
+         ":ios_arm64": COMMON_SRCS + MACH_SRCS + MACH_ARM_SRCS,
+         ":ios_arm64e": COMMON_SRCS + MACH_SRCS + MACH_ARM_SRCS,
+         ":watchos_x86_64": COMMON_SRCS + X86_SRCS + MACH_SRCS + MACH_X86_SRCS,
+@@ -284,6 +285,14 @@ config_setting(
+     },
+ )
+ 
++config_setting(
++    name = "ios_sim_arm64",
++    values = {
++        "apple_platform_type": "ios",
++        "cpu": "ios_sim_arm64",
++    },
++)
++
+ config_setting(
+     name = "ios_arm64",
+     values = {

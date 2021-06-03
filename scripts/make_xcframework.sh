@@ -31,6 +31,9 @@ clone_and_patch_XNNPACK() {
 # Bazel does not support arm64 slices for the simulator yet. But there is a workaround
 # See: https://github.com/bazelbuild/rules_apple/issues/980#issuecomment-738645357
 download_patched_version_of_bazel() {
+    # Here we are using bazel 4.1.0 to build a patched version of bazel 3.7.2,
+    # so we can build the iOS arm64 simulator slice. We are patching version 3.7.2 because
+    # that is the version used by tensorflow 2.5.0
     mkdir -p "${BAZEL_DIR}/4.1.0"
     cd "${BAZEL_DIR}/4.1.0"
     curl -O -L "https://github.com/bazelbuild/bazel/releases/download/4.1.0/bazel-4.1.0-darwin-x86_64"
@@ -68,7 +71,7 @@ build_xcframework() {
     mkdir -p "${SIM_ARM64_DIR}" && unzip bazel-bin/tensorflow/lite/ios/${TENSORFLOW_TARGET}.zip -d "${SIM_ARM64_DIR}"
 
     # Make x86_64 simulator slice
-    bazel build --config=ios --cpu=ios_x86_64 -c opt tensorflow/lite/ios:${TENSORFLOW_TARGET}
+    bazelisk build --config=ios --cpu=ios_x86_64 -c opt tensorflow/lite/ios:${TENSORFLOW_TARGET}
     mkdir -p "${SIM_x86_DIR}" && unzip bazel-bin/tensorflow/lite/ios/${TENSORFLOW_TARGET}.zip -d "${SIM_x86_DIR}"
 
     # Merge both arm64 and x86_64 simulator slices into a fat framework
@@ -79,7 +82,7 @@ build_xcframework() {
         "${BUILD_DIR}/iphonesimulator"
 
     # Make ios slices
-    bazel build --config=ios --ios_multi_cpus=armv7,arm64 -c opt tensorflow/lite/ios:${TENSORFLOW_TARGET}
+    bazelisk build --config=ios --ios_multi_cpus=armv7,arm64 -c opt tensorflow/lite/ios:${TENSORFLOW_TARGET}
     unzip bazel-bin/tensorflow/lite/ios/${TENSORFLOW_TARGET}.zip -d "${BUILD_DIR}/iphoneos"
 
     # Create the xcframework

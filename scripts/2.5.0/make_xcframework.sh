@@ -9,7 +9,7 @@ readonly XNNPACK_DIR="${BUILD_DIR}/XNNPACK"
 readonly OUTPUT_DIR="${BUILD_DIR}/output"
 readonly BAZEL_DIR="${BUILD_DIR}/bazel"
 readonly PATCHED_BAZEL_BIN="${BAZEL_DIR}/bin/bazel"
-readonly PATCHES_DIR="${WORK_DIR}/patches"
+readonly PATCHES_DIR="${WORK_DIR}/patches/2.5.0"
 readonly TENSORFLOW_TARGET="TensorFlowLiteC_static_framework"
 
 # Tensorflow does not support arm64 slices for the simulator yet. This patch is a workaround
@@ -43,13 +43,12 @@ download_patched_version_of_bazel() {
     cd "${BAZEL_DIR}"
     git clone --branch "3.7.2" --depth 1 https://github.com/bazelbuild/bazel.git "3.7.2"
     cd "3.7.2"
-    curl -O -L https://gist.githubusercontent.com/indragiek/e14162c0098d97ee976bceae9441f04d/raw/dba3a66a90d0a96d0dc6e236ab3fa1d41a2ce359/ios_sim_arm64.patch
-    git apply ios_sim_arm64.patch
+    git apply "${PATCHES_DIR}/bazel_ios_sim_arm64.patch"
 
     # To install java11 on macos: brew install java11 https://mkyong.com/java/how-to-install-java-on-mac-osx/
     # https://github.com/bazelbuild/bazel/issues/11399#issuecomment-628945756
     # https://github.com/bazelbuild/rules_nodejs/issues/1301
-    export JAVA_HOME="/usr/local/opt/openjdk@11/libexec/openjdk.jdk/Contents/Home" && "${BAZEL_DIR}"/4.1.0/bazel build --incompatible_restrict_string_escapes=false -c opt //src:bazel
+    export JAVA_HOME="/opt/homebrew/openjdk@11/libexec/openjdk.jdk/Contents/Home" && "${BAZEL_DIR}"/4.1.0/bazel build --incompatible_restrict_string_escapes=false -c opt //src:bazel
     mkdir -p "$(dirname ${PATCHED_BAZEL_BIN})"
     cp bazel-bin/src/bazel "${PATCHED_BAZEL_BIN}"
     chmod +x "${PATCHED_BAZEL_BIN}"
@@ -122,4 +121,4 @@ build_2_5_0() {
 
 rm -rf "${BUILD_DIR}"
 mkdir "${BUILD_DIR}"
-"$@"
+build_2_5_0

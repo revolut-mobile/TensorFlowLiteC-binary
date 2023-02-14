@@ -12,11 +12,17 @@ readonly PATCHED_BAZEL_BIN="${BAZEL_DIR}/bin/bazel"
 readonly PATCHES_DIR="${WORK_DIR}/patches"
 readonly TENSORFLOW_TARGET="TensorFlowLiteC_static_framework"
 
+checkout_tensorflow() {
+    readonly BRANCH="$1"
+    echo "Checking out TensorFlow..."
+    git clone --recurse-submodules --branch "${BRANCH}" --depth 1 https://github.com/tensorflow/tensorflow.git "${TENSORFLOW_DIR}"
+    cd "${TENSORFLOW_DIR}"
+}
+
 # Tensorflow does not support arm64 slices for the simulator yet. This patch is a workaround
 # See: https://github.com/tensorflow/tensorflow/issues/47400
 clone_and_patch_tensorflow() {
-    git clone --recurse-submodules --branch "v2.5.0" --depth 1 https://github.com/tensorflow/tensorflow.git "${TENSORFLOW_DIR}"
-    cd "${TENSORFLOW_DIR}"
+    checkout_tensorflow "v2.5.0"
     git apply "${PATCHES_DIR}/tensorflow.patch"
 }
 
@@ -55,7 +61,7 @@ download_patched_version_of_bazel() {
     chmod +x "${PATCHED_BAZEL_BIN}"
 }
 
-build_xcframework() {
+build_patched_tensorflow_xcframework() {
     readonly SIM_ARM64_DIR="${BUILD_DIR}/iphonesimulator/ios_sim_arm64"
     readonly SIM_x86_DIR="${BUILD_DIR}/iphonesimulator/ios_x86_64"
 
@@ -113,11 +119,42 @@ merge_framework_slices_into_fat_framework() {
     lipo -create -output "${DESTINATION}/${NAME}.framework/${NAME}" "${FRAMEWORK_1}/${NAME}" "${FRAMEWORK_2}/${NAME}"
 }
 
+build_tensorflow_xcframework() {
+    cd ${TENSORFLOW_DIR}
+
+    echo "Configuring TensorFlow..."
+    # See: https://github.com/tensorflow/tensorflow/issues/8527
+    export TF_CONFIGURE_IOS=1
+    yes '' | ./configure || True
+
+    echo "Building iphonesimulator framework..."
+    bazelisk build --config=ios --ios_multi_cpus=sim_arm64,x86_64 -c opt --cxxopt=--std=c++17 //tensorflow/lite/ios:${TENSORFLOW_TARGET}
+    
+    echo "Building iphoneos framework..."
+    bazelisk build --config=ios --ios_multi_cpus=armv7,arm64 -c opt --cxxopt=--std=c++17 //tensorflow/lite/ios:${TENSORFLOW_TARGET}
+
+    echo "Creating xcframework..."
+    mkdir -p "${BUILD_DIR}/iphonesimulator"
+    unzip bazel-out/applebin_ios-ios_sim_arm64-opt-ST-f882807c96e5/bin/tensorflow/lite/ios/${TENSORFLOW_TARGET}.zip -d "${BUILD_DIR}/iphonesimulator"
+    mkdir -p "${BUILD_DIR}/iphoneos"
+    unzip bazel-out/applebin_ios-ios_armv7-opt-ST-5b7531beec20/bin/tensorflow/lite/ios/${TENSORFLOW_TARGET}.zip -d "${BUILD_DIR}/iphoneos"
+
+    xcrun xcodebuild -quiet -create-xcframework \
+        -framework "${BUILD_DIR}/iphoneos/TensorFlowLiteC.framework" \
+        -framework "${BUILD_DIR}/iphonesimulator/TensorFlowLiteC.framework" \
+        -output "${OUTPUT_DIR}/TensorFlowLiteC.xcframework"
+}
+
 build_2_5_0() {
     clone_and_patch_tensorflow
     clone_and_patch_XNNPACK
     download_patched_version_of_bazel
-    build_xcframework
+    build_patched_tensorflow_xcframework
+}
+
+build_2_11_0() {
+    checkout_tensorflow "v2.11.0"
+    build_tensorflow_xcframework
 }
 
 rm -rf "${BUILD_DIR}"

@@ -121,21 +121,17 @@ merge_framework_slices_into_fat_framework() {
 build_tensorflow_xcframework() {
     cd ${TENSORFLOW_DIR}
 
-    echo ""
     echo "Configuring TensorFlow..."
     # See: https://github.com/tensorflow/tensorflow/issues/8527
     export TF_CONFIGURE_IOS=1
     yes '' | ./configure || True
 
-    echo ""
     echo "Building iphonesimulator framework..."
     bazelisk build --config=ios --ios_multi_cpus=sim_arm64,x86_64 -c opt --cxxopt=--std=c++17 //tensorflow/lite/ios:${TENSORFLOW_TARGET}
     
-    echo ""
     echo "Building iphoneos framework..."
     bazelisk build --config=ios --ios_multi_cpus=armv7,arm64 -c opt --cxxopt=--std=c++17 //tensorflow/lite/ios:${TENSORFLOW_TARGET}
 
-    echo ""
     echo "Creating xcframework..."
     mkdir -p "${BUILD_DIR}/iphonesimulator"
     unzip bazel-out/applebin_ios-ios_sim_arm64-opt-ST-f882807c96e5/bin/tensorflow/lite/ios/${TENSORFLOW_TARGET}.zip -d "${BUILD_DIR}/iphonesimulator"

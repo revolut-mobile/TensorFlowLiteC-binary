@@ -54,7 +54,7 @@ download_patched_version_of_bazel() {
     # To install java11 on macos: brew install java11 https://mkyong.com/java/how-to-install-java-on-mac-osx/
     # https://github.com/bazelbuild/bazel/issues/11399#issuecomment-628945756
     # https://github.com/bazelbuild/rules_nodejs/issues/1301
-    export JAVA_HOME="/opt/homebrew/opt/openjdk@11/libexec/openjdk.jdk/Contents/Home" && "${BAZEL_DIR}"/4.1.0/bazel build --incompatible_restrict_string_escapes=false -c opt //src:bazel
+    export JAVA_HOME="/usr/local/opt/openjdk@11/libexec/openjdk.jdk/Contents/Home" && "${BAZEL_DIR}"/4.1.0/bazel build --incompatible_restrict_string_escapes=false -c opt //src:bazel
     mkdir -p "$(dirname ${PATCHED_BAZEL_BIN})"
     cp bazel-bin/src/bazel "${PATCHED_BAZEL_BIN}"
     chmod +x "${PATCHED_BAZEL_BIN}"

@@ -49,7 +49,8 @@ download_patched_version_of_bazel() {
     cd "${BAZEL_DIR}"
     git clone --branch "3.7.2" --depth 1 https://github.com/bazelbuild/bazel.git "3.7.2"
     cd "3.7.2"
-    git apply "${PATCHES_DIR}/bazel_ios_sim_arm64.patch"
+    curl -O -L https://gist.githubusercontent.com/indragiek/e14162c0098d97ee976bceae9441f04d/raw/dba3a66a90d0a96d0dc6e236ab3fa1d41a2ce359/ios_sim_arm64.patch
+    git apply ios_sim_arm64.patch
 
     # To install java11 on macos: brew install java11 https://mkyong.com/java/how-to-install-java-on-mac-osx/
     # https://github.com/bazelbuild/bazel/issues/11399#issuecomment-628945756

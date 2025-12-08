@@ -135,9 +135,9 @@ build_tensorflow_xcframework() {
 
     echo "Creating xcframework..."
     mkdir -p "${BUILD_DIR}/iphonesimulator"
-    unzip bazel-out/applebin_ios-ios_sim_arm64-opt-ST-f882807c96e5/bin/tensorflow/lite/ios/${TENSORFLOW_TARGET}.zip -d "${BUILD_DIR}/iphonesimulator"
+    unzip bazel-out/applebin_ios-ios_sim_arm64-opt-ST-*/bin/tensorflow/lite/ios/${TENSORFLOW_TARGET}.zip -d "${BUILD_DIR}/iphonesimulator"
     mkdir -p "${BUILD_DIR}/iphoneos"
-    unzip bazel-out/applebin_ios-ios_armv7-opt-ST-5b7531beec20/bin/tensorflow/lite/ios/${TENSORFLOW_TARGET}.zip -d "${BUILD_DIR}/iphoneos"
+    unzip bazel-out/applebin_ios-ios_armv7-opt-ST-*/bin/tensorflow/lite/ios/${TENSORFLOW_TARGET}.zip -d "${BUILD_DIR}/iphoneos"
 
     xcrun xcodebuild -quiet -create-xcframework \
         -framework "${BUILD_DIR}/iphoneos/TensorFlowLiteC.framework" \
@@ -155,6 +155,12 @@ build_2_5_0() {
 build_2_11_0() {
     checkout_tensorflow "v2.11.0"
     build_tensorflow_xcframework
+}
+
+build_2_17_0() {
+    echo "This version is not built anymore, instead is already prebuilt by google."
+    echo "Find the prebuilt xcframework in https://github.com/revolut-mobile/TensorFlowLiteC-binary/releases."
+    exit 1
 }
 
 rm -rf "${BUILD_DIR}"

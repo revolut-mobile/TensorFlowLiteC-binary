@@ -158,8 +158,9 @@ build_2_11_0() {
 }
 
 build_2_17_0() {
-    checkout_tensorflow "v2.17.0"
-    build_tensorflow_xcframework
+    echo "This version is not built anymore, instead is already prebuilt by google."
+    echo "Find the prebuilt xcframework in https://github.com/revolut-mobile/TensorFlowLiteC-binary/releases."
+    exit 1
 }
 
 rm -rf "${BUILD_DIR}"
